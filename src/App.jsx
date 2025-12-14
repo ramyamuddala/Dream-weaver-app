@@ -15,8 +15,6 @@ import {
 // --- API HANDLING ---
 
 const analyzeDream = async (dreamInput, userContext) => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY; 
-
     const prompt = `
       Act as a wise, deeply intuitive dream guide.
       Analyze this user's dream: "${dreamInput}".
@@ -62,16 +60,10 @@ const analyzeDream = async (dreamInput, userContext) => {
     `;
 
   try {
-    console.log("Step 2: Calling Gemini API with model gemini-2.5-pro-latest...");
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-        headers: { 'Content-Type': 'application/json' },
-        method: 'POST', // FIX: Added the required POST method
-        body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json" 
-        }
-      })
+    console.log("Step 2: Calling Secure Analysis Function...");
+    const response = await fetch('/.netlify/functions/analyze-dream', {
+      method: 'POST',
+      body: JSON.stringify({ prompt })
     });
 
     if (!response.ok) {
@@ -80,7 +72,9 @@ const analyzeDream = async (dreamInput, userContext) => {
     }
 
     const data = await response.json();
-    const textResult = data.candidates[0].content.parts[0].text;
+    const rawText = data.candidates[0].content.parts[0].text;
+    // Clean up potential markdown formatting from Gemini before parsing
+    const textResult = rawText.replace(/```json|```/g, '').trim();
     console.log("Step 3: Gemini API call successful. Received analysis.");
     return JSON.parse(textResult);
   } catch (error) {
@@ -90,13 +84,6 @@ const analyzeDream = async (dreamInput, userContext) => {
 };
 
 const paintDream = async (optimizedPrompt) => {
-  const apiKey = import.meta.env.VITE_STABILITY_API_KEY; 
-  
-  const engineId = 'stable-diffusion-xl-1024-v1-0';
-  const apiHost = 'https://api.stability.ai';
-  const endpoint = `${apiHost}/v1/generation/${engineId}/text-to-image`;
-
-  // We use the optimizedPrompt from Gemini directly.
   const finalPrompt = `
     ${optimizedPrompt}, 
     highly detailed, digital art masterpiece, 8k resolution, cinematic lighting, profound atmosphere.
@@ -104,35 +91,16 @@ const paintDream = async (optimizedPrompt) => {
 
   console.log("Painting with optimized prompt:", finalPrompt);
 
-  if (!apiKey || apiKey === "") {
-    console.error("Stability AI Key is missing from .env file.");
-    console.warn("Stability API Key missing. Returning placeholder.");
-    return null; // Triggers UI placeholder
-  }
-
   try {
-    const response = await fetch(endpoint, {
+    const response = await fetch('/.netlify/functions/paint-dream', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        text_prompts: [{ text: finalPrompt }],
-        cfg_scale: 7,
-        height: 1024,
-        width: 1024,
-        steps: 30,
-        samples: 1,
-      }),
+      body: JSON.stringify({ prompt: finalPrompt }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      // Stability AI often puts the error message in a "message" or "name" field.
-      throw new Error(data.message || data.name || `Stability AI Error: ${response.status}`);
+      throw new Error(data.error || `Stability AI Error: ${response.status}`);
     }
 
     console.log("Step 5: Stability AI call successful. Received image data.");
@@ -146,12 +114,6 @@ const paintDream = async (optimizedPrompt) => {
 };
 
 const fetchKeywordImages = async (dreamInput) => {
-  const apiKey = import.meta.env.VITE_PEXELS_API_KEY;
-  if (!apiKey) {
-    console.warn("Pexels API Key is missing. Skipping keyword images.");
-    return [];
-  }
-
   const keywords = dreamInput
     .toLowerCase()
     .replace(/[.,]/g, '')
@@ -163,14 +125,13 @@ const fetchKeywordImages = async (dreamInput) => {
   if (keywords.length === 0) return [];
 
   try {
-    const imagePromises = keywords.map(keyword =>
-      fetch(`https://api.pexels.com/v1/search?query=${keyword}&per_page=1`, {
-        headers: { 'Authorization': apiKey }
-      }).then(res => res.json())
-    );
+    const response = await fetch('/.netlify/functions/get-stock-images', {
+      method: 'POST',
+      body: JSON.stringify({ keywords })
+    });
 
-    const results = await Promise.all(imagePromises);
-    const filteredUrls = results.map(result => result?.photos[0]?.src?.medium).filter(Boolean);
+    const data = await response.json();
+    const filteredUrls = data.images || [];
 
     // Return URL with a style calculated to ensure even distribution
     return filteredUrls.map((url, index) => ({ 
@@ -1254,5 +1215,3 @@ export default App;
 // };
 
 // export default App;
-
-
