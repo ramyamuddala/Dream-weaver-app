@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- EXISTING ANIMATIONS --- */
+
+@keyframes dream-blink {
+  0%, 35%, 100% { --lid-scale: 0; --pupil-translate: 0px; }
+  55%, 90% { --lid-scale: 1; --pupil-translate: 4px; }
+}
+
+.animate-dream-blink {
+  animation: dream-blink 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.dream-eye-lid {
+  transform-origin: top;
+  transform: scaleY(var(--lid-scale, 0));
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dream-eye-pupil {
+  transform: translateY(var(--pupil-translate, 0px));
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes cosmic-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.animate-cosmic-pulse {
+  animation: cosmic-pulse 4s ease-in-out infinite;
+}
+
+/* --- NEW: KEYWORD IMAGE ANIMATION --- */
+@keyframes float-image {
+  0% {
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+  }
+  20% {
+    /* Fade in and rise */
+    transform: translateY(0) scale(1);
+    opacity: 0.8;
+  }
+  80% {
+    /* Hold */
+    transform: translateY(-20px) scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    /* Fade out and continue rising */
+    transform: translateY(-40px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* --- NEW: SUBCONSCIOUS STREAM ANIMATIONS --- */
+
+@keyframes float-word {
+  0% {
+    transform: translateY(100vh) scale(0.8);
+    opacity: 0;
+    filter: blur(8px);
+  }
+  20% {
+    opacity: 0.6;
+    filter: blur(0px);
+  }
+  80% {
+    opacity: 0.6;
+    filter: blur(0px);
+  }
+  100% {
+    transform: translateY(-20vh) scale(1.2);
+    opacity: 0;
+    filter: blur(8px);
+  }
+}
+
+.dream-word {
+  position: absolute;
+  color: rgba(168, 85, 247, 0.3); /* Purple tint */
+  font-family: serif;
+  font-style: italic;
+  white-space: nowrap;
+  pointer-events: none;
+  animation-name: float-word;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+  z-index: 0; /* Behind the loader */
+}
+
+/* Varying depths for parallax feel */
+.dream-word:nth-child(3n) {
+  color: rgba(99, 102, 241, 0.2); /* Indigo tint */
+  filter: blur(2px);
+  z-index: -1;
+}
+
+/* --- EXISTING BUTTON STYLES --- */
+.gradient-button {
+  position: relative;
+  padding: 16px 32px;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 50px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.gradient-button:hover { transform: scale(1.03); }
+
+.gradient-button::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(from 0deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #ff6b6b);
+  z-index: -2;
+  filter: blur(10px);
+  transform: rotate(0deg);
+  transition: transform 1.5s ease-in-out;
+}
+
+.gradient-button:hover::before { transform: rotate(180deg); }
+
+.gradient-button::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: #0F111A;
+  border-radius: 47px;
+  z-index: -1;
+  filter: blur(5px);
+}
+
+.gradient-text {
+  color: transparent;
+  background: conic-gradient(from 0deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #ff6b6b);
+  background-clip: text;
+  -webkit-background-clip: text;
+  filter: hue-rotate(0deg);
+}
+
+.gradient-button:hover .gradient-text { animation: hue-rotating 2s linear infinite; }
+.gradient-button:active { transform: scale(0.99); }
+@keyframes hue-rotating { to { filter: hue-rotate(360deg); } }
