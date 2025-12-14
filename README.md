@@ -68,7 +68,7 @@ Open your browser and navigate to `http://localhost:5173`.
     -   Publish Directory: `dist`
 5.  **Environment Variables** (Crucial Step):
     -   Go to **Site Settings > Environment Variables**.
-    -   Add `GEMINI_API_KEY`, `STABILITY_API_KEY`, and `VITE_PEXELS_API_KEY` with your actual values.
+    -   Add `VITE_GEMINI_API_KEY`, `VITE_STABILITY_API_KEY`, and `VITE_PEXELS_API_KEY` with your actual values.
 6.  Click **Deploy**.
 
 ## 🤝 Contributing
